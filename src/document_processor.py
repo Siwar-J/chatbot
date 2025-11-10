@@ -28,7 +28,7 @@ import pypdf
 class DocumentProcessor:
     """Gère le chargement et le traitement des documents PDF"""
     
-    def __init__(self, chunk_size: int = 800, chunk_overlap: int = 100):
+    def __init__(self, chunk_size: int = 2000, chunk_overlap: int = 100):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.text_splitter = RecursiveCharacterTextSplitter(
