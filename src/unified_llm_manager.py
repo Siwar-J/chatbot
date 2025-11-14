@@ -8,22 +8,20 @@ logger = logging.getLogger(__name__)
 class UnifiedLLMManager:
     """Manager unifié avec support Ollama, Cloud et Local"""
     
-    def __init__(self, mode: str = "auto", provider: str = "huggingface", ollama_model: str = "mistral"):
+    def __init__(self, mode: str = "auto", ollama_model: str = "mistral"):
         """
         Args:
             mode: "auto", "cloud", "ollama", "local"
-            provider: "huggingface", "openai" (si mode=cloud)
             ollama_model: "mistral", "llama2", etc. (si mode=ollama)
         """
         self.mode = mode
-        self.provider = provider
         self.ollama_model = ollama_model
         self.cloud_manager = None
         self.ollama_manager = None
         self.local_manager = None
         self.is_initialized = False
         
-        logger.info(f"🚀 Initialisation - Mode: {mode}, Provider: {provider}")
+        logger.info(f"🚀 Initialisation - Mode: {mode}")
         
         self._initialize()
     
@@ -82,49 +80,13 @@ class UnifiedLLMManager:
             logger.warning(f"❌ Ollama échoué: {e}")
             return False
     
-    def _initialize_cloud(self) -> bool:
-        """Initialise le cloud"""
-        try:
-            from .cloud_llm_manager import CloudLLMManager
-            from .cloud_config import CLOUD_CONFIG
-            
-            if self.provider == "huggingface":
-                api_key = os.getenv("HF_API_KEY")
-                model = CLOUD_CONFIG.HF_MODEL
-            elif self.provider == "openai":
-                api_key = os.getenv("OPENAI_API_KEY")
-                model = CLOUD_CONFIG.OPENAI_MODEL
-            else:
-                return False
-            
-            if not api_key:
-                return False
-            
-            self.cloud_manager = CloudLLMManager(
-                provider=self.provider,
-                api_key=api_key,
-                model=model
-            )
-            
-            # Test rapide
-            test_result = self.cloud_manager.test_generation()
-            if "✅" in test_result:
-                self.is_initialized = True
-                logger.info("✅ Mode cloud activé")
-                return True
-            return False
-            
-        except Exception as e:
-            logger.warning(f"❌ Cloud échoué: {e}")
-            return False
-    
     def _initialize_local(self) -> bool:
         """Initialise le mode local"""
         try:
-            from .llm_manager import LLMManager
-            from .config import MODEL_CONFIG
+            from .ollama_manager import OllamaManager
+            from .config import OPTIMIZED_Ollama_CONFIG
             
-            self.local_manager = LLMManager(MODEL_CONFIG.LLM_MODEL)
+            self.local_manager = OllamaManager()
             self.local_manager.initialize()
             
             if self.local_manager.is_initialized:
@@ -141,8 +103,8 @@ class UnifiedLLMManager:
         """Dernier recours"""
         logger.warning("🔄 Activation du fallback local basique...")
         try:
-            from .llm_manager import LLMManager
-            self.local_manager = LLMManager("distilgpt2")
+            from .ollama_manager import OllamaManager
+            self.local_manager = OllamaManager()
             self.local_manager.initialize()
             self.is_initialized = self.local_manager.is_initialized
         except:
@@ -154,20 +116,12 @@ class UnifiedLLMManager:
         
         if self.ollama_manager:
             return self.ollama_manager.generate_response(prompt)
-        elif self.cloud_manager:
-            return self.cloud_manager.generate_response(prompt)
-        elif self.local_manager:
-            return self.local_manager.generate_response(prompt)
         else:
             return "❌ Aucun manager disponible"
     
     def create_technical_prompt(self, context: str, question: str) -> str:
         if self.ollama_manager:
-            return self.ollama_manager.create_technical_prompt(context, question)
-        elif self.cloud_manager:
-            return self.cloud_manager.create_technical_prompt(context, question)
-        elif self.local_manager:
-            return self.local_manager.create_technical_prompt(context, question)
+            return self.ollama_manager.create_prompt(context, question)
         else:
             return f"Contexte: {context}\nQuestion: {question}\nRéponse:"
     
@@ -175,14 +129,6 @@ class UnifiedLLMManager:
         if self.ollama_manager:
             info = self.ollama_manager.get_model_info()
             info["mode"] = "ollama"
-            return info
-        elif self.cloud_manager:
-            info = self.cloud_manager.get_model_info()
-            info["mode"] = "cloud"
-            return info
-        elif self.local_manager:
-            info = self.local_manager.get_model_info()
-            info["mode"] = "local"
             return info
         else:
             return {
@@ -195,10 +141,7 @@ class UnifiedLLMManager:
     def test_generation(self) -> str:
         if self.ollama_manager:
             return self.ollama_manager.test_generation()
-        elif self.cloud_manager:
-            return self.cloud_manager.test_generation()
-        elif self.local_manager:
-            return self.local_manager.test_generation()
+
         else:
             return "❌ Aucun manager disponible"
     

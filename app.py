@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 from src.retrieval_manager import RetrievalManager
 from src.section_document_processor import SectionDocumentProcessor
 from src.unified_llm_manager import UnifiedLLMManager
-from src.config import PATH_CONFIG, RETRIEVAL_CONFIG, CHUNKING_CONFIG
+from src.config import PATH_CONFIG, RETRIEVAL_CONFIG, CHUNKING_CONFIG, OPTIMIZED_Ollama_CONFIG
 
 # Configuration de la page Streamlit
 st.set_page_config(
@@ -128,7 +128,6 @@ class TechChatbotApp:
                 # 3. LLM Manager
                 self.llm_manager = UnifiedLLMManager(
                     mode="auto",
-                    provider="huggingface",
                     ollama_model="mistral"
                 )
                 
@@ -213,14 +212,12 @@ class TechChatbotApp:
     def _initialize_fallback_retrieval(self):
         """Initialise un système de retrieval de fallback"""
         try:
-            from src.vector_store import VectorStoreManager
-            from src.config import MODEL_CONFIG
+            from src.advanced_vector_store import AdvancedVectorStore
+            from src.config import OPTIMIZED_Ollama_CONFIG
             
             logger.warning("🔄 Utilisation du système de retrieval de fallback")
             self.retrieval_manager = None
-            self.vector_manager = VectorStoreManager(
-                embedding_model=MODEL_CONFIG.EMBEDDING_MODEL
-            )
+            self.vector_manager = AdvancedVectorStore()
         except Exception as e:
             logger.error(f"❌ Fallback retrieval également échoué: {e}")
             raise
@@ -229,8 +226,7 @@ class TechChatbotApp:
         """Initialise le gestionnaire de LLM unifié"""
         try:
             self.llm_manager = UnifiedLLMManager(
-                mode="auto",  # Ollama -> Cloud -> Local
-                provider="huggingface",
+                mode="Ollama",  
                 ollama_model="mistral"
             )
             
@@ -611,7 +607,7 @@ class TechChatbotApp:
             with col1:
                 st.write("**Configuration Retrieval:**")
                 st.write(f"- Stratégie: {RETRIEVAL_CONFIG.SEARCH_STRATEGY}")
-                st.write(f"- Modèle embedding: {RETRIEVAL_CONFIG.EMBEDDING_MODEL}")
+                st.write(f"- Modèle embedding: {OPTIMIZED_Ollama_CONFIG.OLLAMA_EMBEDDING_MODEL}")
                 st.write(f"- Re-ranking: {'✅' if RETRIEVAL_CONFIG.RERANK_ENABLED else '❌'}")
                 st.write(f"- Résultats initiaux: {RETRIEVAL_CONFIG.INITIAL_RESULTS}")
                 st.write(f"- Résultats finaux: {RETRIEVAL_CONFIG.FINAL_RESULTS}")
@@ -681,8 +677,6 @@ class TechChatbotApp:
         if self.llm_manager:
             model_info = self.llm_manager.get_model_info()
             st.write(f"**Modèle:** {model_info.get('model', 'Inconnu')}")
-            st.write(f"**Statut:** {model_info.get('status', 'Inconnu')}")
-            st.write(f"**Mode:** {getattr(self.llm_manager, 'mode', 'Inconnu')}")
         
         # Informations retrieval
         if st.session_state.retrieval_ready:

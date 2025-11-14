@@ -16,19 +16,18 @@ class RetrievalManager:
     def _initialize(self):
         """Initialise tous les composants"""
         try:
-            from .embedding_manager import AdvancedEmbeddingManager
+            from .ollama_embedding_manager import OllamaEmbeddingManager
             from .advanced_vector_store import AdvancedVectorStore
-            from .config import RETRIEVAL_CONFIG
+            from .config import OLLAMA_CONFIG
             
             # Embedding Manager
-            self.embedding_manager = AdvancedEmbeddingManager(
-                model_name=RETRIEVAL_CONFIG.EMBEDDING_MODEL
+            self.embedding_manager = OllamaEmbeddingManager(
+                model_name=OLLAMA_CONFIG.OLLAMA_EMBEDDING_MODEL
             )
             
             # Vector Store
             self.vector_store = AdvancedVectorStore(
-                embedding_manager=self.embedding_manager
-            )
+                        )
             
             logger.info("✅ Retrieval Manager initialisé")
             
@@ -65,19 +64,10 @@ class RetrievalManager:
     def search(self, query: str, k: int = 5, filters: Dict = None) -> List[Dict]:
         """Recherche avancée avec tous les optimisations"""
         try:
-            from .config import RETRIEVAL_CONFIG
-            
-            if RETRIEVAL_CONFIG.SEARCH_STRATEGY == "hybrid":
-                results = self.vector_store.hybrid_search(query, k)
-            elif RETRIEVAL_CONFIG.SEARCH_STRATEGY == "advanced":
-                results = self.vector_store.advanced_similarity_search(
+            results = self.vector_store.advanced_similarity_search(
                     query, 
-                    RETRIEVAL_CONFIG.INITIAL_RESULTS,
-                    k,
-                    filters
+                    k
                 )
-            else:
-                results = self.vector_store.advanced_similarity_search(query, k)
             
             # Post-processing des résultats
             processed_results = self._post_process_results(results, query)

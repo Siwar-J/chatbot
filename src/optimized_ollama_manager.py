@@ -1,13 +1,13 @@
-# src/ollama_manager.py
+# src/optimized_ollama_manager.py
 import requests
 import logging
-import json
-from typing import Optional, Dict, Any
 import time
+from typing import Optional, Dict, Any, List
+import json
 
 logger = logging.getLogger(__name__)
 
-class OllamaManager:
+class OptimizedOllamaManager:
     """Gestionnaire Ollama optimisé pour vos modèles disponibles"""
     
     def __init__(self, model: str = "mistral", base_url: str = "http://localhost:11434"):
@@ -85,10 +85,10 @@ class OllamaManager:
         except Exception as e:
             logger.error(f"❌ Erreur initialisation: {e}")
     
-    def generate_response(self, context: str, question: str, max_retries: int = 2) -> str:
+    def generate_technical_response(self, context: str, question: str, max_retries: int = 2) -> str:
         """Génération optimisée pour les réponses techniques"""
         try:
-            prompt = self._create_prompt(context, question)
+            prompt = self._create_technical_prompt(context, question)
             
             for attempt in range(max_retries):
                 try:
@@ -154,7 +154,7 @@ class OllamaManager:
             logger.error(f"❌ Erreur génération technique: {e}")
             return "Erreur lors de la génération de la réponse."
     
-    def create_prompt(self, context: str, question: str) -> str:
+    def _create_technical_prompt(self, context: str, question: str) -> str:
         """Crée un prompt optimisé pour la documentation technique"""
         return f"""Tu es un expert technique assistant des utilisateurs avec de la documentation.
 
@@ -236,23 +236,3 @@ RÉPONSE:"""
             }
         except:
             return {"status": "❌ Impossible de récupérer les informations"}
-        
-    def get_model_info(self) -> dict:
-        """Retourne les informations du modèle"""
-        return {
-            "model": self.model,
-            "device": "💻 Ollama",
-            "initialized": self.is_initialized,
-            "type": "ollama"
-        }
-    
-    def test_generation(self) -> str:
-        """Teste la génération"""
-        if not self.is_initialized:
-            return "❌ Ollama non initialisé"
-        
-        try:
-            response = self.generate_response("Explique l'IA en une phrase.")
-            return f"✅ Ollama ({self.model}): {response[:80]}..."
-        except Exception as e:
-            return f"❌ Test échoué: {e}"

@@ -42,11 +42,6 @@ class PathConfig:
 @dataclass
 class RetrievalConfig:
     """Configuration avancée pour le retrieval"""
-    
-    # Embedding
-    EMBEDDING_MODEL: str = "intfloat/multilingual-e5-large"
-    EMBEDDING_STRATEGY: Literal["multilingual", "french", "english"] = "multilingual"
-    
     # Retrieval
     SEARCH_STRATEGY: Literal["advanced", "hybrid", "vector"] = "advanced"
     INITIAL_RESULTS: int = 20
@@ -69,8 +64,77 @@ class ChunkingConfig:
     MAX_SECTION_LENGTH: int = 1200
     PRIORITIZE_TECHNICAL_SECTIONS: bool = True
 
+# NOUVELLE CONFIGURATION OLLAMA
+@dataclass
+class OllamaConfig:
+    """Configuration pour les modèles Ollama"""
+    
+    # Activation Ollama
+    USE_OLLAMA: bool = True
+    
+    # Configuration de base Ollama
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_TIMEOUT: int = 120
+    
+    # Modèles Ollama pour l'embedding - FORCER nomic-embed-text
+    OLLAMA_EMBEDDING_MODEL: str = "nomic-embed-text"
+    OLLAMA_EMBEDDING_DIMENSIONS: int = 768  # Dimensions fixes pour nomic
+    
+    # Modèles Ollama pour le LLM
+    OLLAMA_LLM_MODEL: str = "mistral"
+    
+    # Stratégie d'embedding - FORCER ollama
+    EMBEDDING_STRATEGY: Literal["ollama"] = "ollama"
+    
+    # Performance
+    OLLAMA_EMBEDDING_BATCH_SIZE: int = 8
+    OLLAMA_LLM_TIMEOUT: int = 120
+    
+    # Fallback models
+    FALLBACK_EMBEDDING_MODEL: str = "sentence-transformers/all-mpnet-base-v2"
+    FALLBACK_LLM_MODEL: str = "distilgpt2"
+    
+    def __post_init__(self):
+        # Liste des modèles d'embedding Ollama recommandés
+        self.OLLAMA_EMBEDDING_MODELS = [
+            "nomic-embed-text",      # 768 dimensions
+            "all-minilm",            # 384 dimensions  
+            "bge-m3",                # 1024 dimensions
+        ]
+        
+        # Liste des modèles LLM Ollama recommandés
+        self.OLLAMA_LLM_MODELS = [
+            "mistral",              # Excellent équilibre
+            "llama2",               # Très bon pour le dialogue
+            "codellama",            # Spécialisé code
+            "mixtral",              # Très performant
+            "phi",                  # Léger et rapide
+        ]
+@dataclass
+class OptimizedOllamaConfig:
+    """Configuration optimisée pour vos modèles disponibles"""
+    
+    # Ollama Configuration
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_TIMEOUT: int = 120
+    OLLAMA_PREFERRED_MODEL: str = "mistral"  # Votre meilleur modèle
+    
+    # Embedding Configuration  
+    OLLAMA_EMBEDDING_MODEL: str = "nomic-embed-text"  # Vous l'avez déjà !
+    
+    # Processing
+    CHUNK_SIZE: int = 800
+    CHUNK_OVERLAP: int = 100
+    MAX_RETRIES: int = 2
+    
+    # Performance
+    BATCH_SIZE: int = 4
+    ENABLE_STREAMING: bool = False  # Désactivé pour plus de stabilité
+
+OPTIMIZED_Ollama_CONFIG = OptimizedOllamaConfig()
 RETRIEVAL_CONFIG = RetrievalConfig()
 CHUNKING_CONFIG = ChunkingConfig()
 MODEL_CONFIG = ModelConfig()
 PROCESSING_CONFIG = ProcessingConfig()
 PATH_CONFIG = PathConfig()
+OLLAMA_CONFIG = OllamaConfig()  # NOUVELLE INSTANCE
