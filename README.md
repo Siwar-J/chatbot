@@ -5,12 +5,8 @@ Un chatbot intelligent qui répond aux questions en se basant sur vos documents 
 ## 📋 Table des Matières
 
 - [Fonctionnalités](#-fonctionnalités)
-- [Architecture](#-architecture)
 - [Installation](#-installation)
 - [Utilisation](#-utilisation)
-- [Développement](#-développement)
-- [Configuration](#-configuration)
-- [Dépannage](#-dépannage)
 
 ## 🚀 Fonctionnalités
 
@@ -20,23 +16,6 @@ Un chatbot intelligent qui répond aux questions en se basant sur vos documents 
 - **☁️ Support backend** - Ollama
 - **💬 Interface intuitive** - Application Streamlit moderne et responsive
 - **🔄 Gestion de contexte** - Maintient l'historique des conversations
-
-## 🏗️ Architecture
-
-┌─────────────────┐    ┌──────────────────┐    ┌────────────────┐
-│   Interface     │    │   Traitement     │    │   Base de      │
-│   Streamlit     │◄──►│   des Documents  │◄──►│   Connaissances│
-│                 │    │                  │    │   Vectorielle  │
-└─────────────────┘    └──────────────────┘    └────────────────┘
-         │                       │                       │
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌──────────────────┐    ┌────────────────┐
-│   Gestionnaire  │    │   Embeddings     │    │   Recherche    │
-│      LLM        │    │   Sémantiques    │    │   Vectorielle  │
-│                 │    │                  │    │                │
-└─────────────────┘    └──────────────────┘    └────────────────┘
-
 
 ## 🛠️ Installation
 
