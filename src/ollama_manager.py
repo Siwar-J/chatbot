@@ -85,11 +85,9 @@ class OllamaManager:
         except Exception as e:
             logger.error(f"❌ Erreur initialisation: {e}")
     
-    def generate_response(self, context: str, question: str, max_retries: int = 2) -> str:
+    def generate_response(self, prompt: str, max_retries: int = 2) -> str:
         """Génération optimisée pour les réponses techniques"""
         try:
-            prompt = self._create_prompt(context, question)
-            
             for attempt in range(max_retries):
                 try:
                     logger.info(f"🔄 Génération technique - tentative {attempt + 1}")
